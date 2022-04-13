@@ -19,6 +19,39 @@ namespace Repository.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.0");
 
+            modelBuilder.Entity("DomainLayer.Login", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("createdBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("createdOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("modifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("modifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("roleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
+
+                    b.ToTable("login");
+                });
+
             modelBuilder.Entity("DomainLayer.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -171,6 +204,53 @@ namespace Repository.Migrations
                     b.HasKey("id");
 
                     b.ToTable("Specificatiion");
+                });
+
+            modelBuilder.Entity("DomainLayer.Roles", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("createdBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("createdOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("modifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("modifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            id = 1,
+                            createdBy = "Subin",
+                            createdOn = new DateTime(2022, 4, 13, 0, 45, 27, 291, DateTimeKind.Local).AddTicks(6208),
+                            modifiedBy = "Subin",
+                            modifiedOn = new DateTime(2022, 4, 13, 0, 45, 27, 291, DateTimeKind.Local).AddTicks(6572),
+                            name = "User"
+                        },
+                        new
+                        {
+                            id = 2,
+                            createdBy = "Subin",
+                            createdOn = new DateTime(2022, 4, 13, 0, 45, 27, 291, DateTimeKind.Local).AddTicks(6869),
+                            modifiedBy = "Subin",
+                            modifiedOn = new DateTime(2022, 4, 13, 0, 45, 27, 291, DateTimeKind.Local).AddTicks(6871),
+                            name = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("DomainLayer.Users.UserRegistration", b =>

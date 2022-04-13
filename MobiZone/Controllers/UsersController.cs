@@ -1,7 +1,9 @@
 ﻿using ApiLayer.Messages;
 using ApiLayer.Models;
 using AutoMapper;
+using BusinessObjectLayer;
 using BusinessObjectLayer.User;
+using DomainLayer;
 using DomainLayer.Users;
 using DTOLayer.UserModel;
 using log4net;
@@ -32,19 +34,22 @@ namespace ApiLayer.Controllers
         List<UserDataViewModel> _userDataList;
         IWebHostEnvironment _webHostEnvironment;
         Security _sec;
-        public UsersController(ProductDbContext userContext, IUserCreate userCreate, IMapper mapper, IWebHostEnvironment web)
+        ILoginOperations _loginOperations;
+        Login _login;
+        public UsersController(ProductDbContext userContext, IUserCreate userCreate, IMapper mapper, IWebHostEnvironment web, ILoginOperations loginOperations)
         {
             _webHostEnvironment = web;
             _userContext = userContext;
             _userCreate = userCreate;
             _user = new UserRegistration();
+            _login = new Login();
             _userMessages = new UserMessages(_webHostEnvironment);
             _userResponse = new ResponseModel<UserDataViewModel>();
             _log = LogManager.GetLogger(typeof(UsersController));
             _mapper = mapper;
             _userDataList = new List<UserDataViewModel>();
             _sec = new Security();
-
+            _loginOperations = loginOperations;
         }
         [HttpPost("UserCreate")]
         public IActionResult post([FromBody] UserViewModel users)
@@ -56,10 +61,18 @@ namespace ApiLayer.Controllers
             _user.createdBy = users.FirstName + " " + users.LastName;
             _user.modifiedBy = users.FirstName + " " + users.LastName;
             _user.Password = _sec.Encrypt("subin", users.Password);
+            _login.username = users.Email;
+            _login.password = users.Password;
+            _login.createdOn = DateTime.Now;
+            _login.createdBy = users.FirstName + " " + users.LastName;
+            _login.modifiedOn = DateTime.Now;
+            _login.modifiedBy = users.FirstName + " " + users.LastName;
+            _login.roleId = (int)RoleTypes.User;
             ResponseModel<string> _userResponse = new ResponseModel<string>();
             try
             {
                 _userCreate.AddUserRegistration(_user);
+                _loginOperations.Add(_login);
                 string message = _userMessages.Added + ",Response Message : " + new HttpResponseMessage(System.Net.HttpStatusCode.OK);
                 _userResponse.AddResponse(true, 0, null, message);
                 return new JsonResult(_userResponse);
@@ -78,12 +91,12 @@ namespace ApiLayer.Controllers
 
 
         #region Get Method for users
-        [HttpGet]
-        public IActionResult Get()
+        [HttpGet("userdata")]
+        public IActionResult userdata()
         {
             try
             {
-                _userList = _userCreate.Get();
+                _userList = _userCreate.Get().Result;
                 if (_userList == null)
                 {
                     ResponseModel<string> _response = new ResponseModel<string>();
@@ -120,7 +133,7 @@ namespace ApiLayer.Controllers
             {
                 ResponseModel<UserRegistration> _response = new ResponseModel<UserRegistration>();
                 string message;
-                UserRegistration check = _userCreate.Authenticate(data.userName, data.password);
+                UserRegistration check = _userCreate.Authenticate(data.userName, data.password).Result;
                 if (check != null)
                 {
                     message = _userMessages.Added + new HttpResponseMessage(System.Net.HttpStatusCode.OK) ;
